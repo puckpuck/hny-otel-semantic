@@ -24,11 +24,11 @@ The following options can be specified on the command line or via environment
 variables. The Honeycomb API Key option is required and must be specified on the
 or as an environment variable.
 
-| CLI option        | Environment Variable  | Description                                                  | Default   |
-|-------------------|-----------------------|--------------------------------------------------------------|-----------|
-| dry-run           |                       | Dry run mode                                                 | `false`   |
-| honeycomb-api-key | HONEYCOMB_API_KEY     | Honeycomb API Key with permissions to update dataset columns | `nil`     |
-| model-path        | SEMANTIC_MODEL_PATH   | Path for OpenTelemetry semantic models                       | `model`   |
+| CLI option          | Environment Variable  | Description                                                  | Default   |
+|---------------------|-----------------------|--------------------------------------------------------------|-----------|
+| --dry-run           |                       | Dry run mode                                                 | `false`   |
+| --honeycomb-api-key | HONEYCOMB_API_KEY     | Honeycomb API Key with permissions to update dataset columns | `nil`     |
+| --model-path        | SEMANTIC_MODEL_PATH   | Path for OpenTelemetry semantic models                       | `model`   |
 
 ## Semantic Models
 
