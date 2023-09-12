@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var (
@@ -72,6 +73,7 @@ func updateHoneycombDatasets() error {
 					fmt.Println("Updating column:", column.KeyName, "in dataset:", dataset.Name)
 					column.Description = truncate(description, 255)
 					if !dryRun {
+						time.Sleep(200 * time.Millisecond)
 						err = hnyClient.UpdateColumn(dataset, column)
 						if err != nil {
 							fmt.Println("Error while updating column:", column.KeyName)
