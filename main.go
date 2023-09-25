@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -14,6 +15,7 @@ var (
 	honeycombApiKey    string
 	semanticModelPath  = "model"
 	dryRun             = false
+	parseModelsOnly    = false
 	semanticAttributes map[string]string
 )
 
@@ -37,10 +39,28 @@ func main() {
 
 	fmt.Println("Found", len(semanticAttributes), "semantic attributes")
 
-	err = updateHoneycombDatasets()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(3)
+	if parseModelsOnly {
+		fmt.Println()
+
+		keys := make([]string, 0, len(semanticAttributes))
+		for k := range semanticAttributes {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, k := range keys {
+			fmt.Println(k, ":", semanticAttributes[k])
+		}
+
+		fmt.Println()
+		fmt.Println(len(semanticAttributes), "semantic attributes found")
+
+	} else {
+		err = updateHoneycombDatasets()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(3)
+		}
 	}
 
 	fmt.Println("Done!")
@@ -150,14 +170,35 @@ func parseModel(path string) error {
 	}
 
 	for _, group := range model.Groups {
-		prefix := group.Prefix
 
-		for _, attribute := range group.Attributes {
-			description := strings.TrimSpace(attribute.Brief)
+		if group.Type == "metric" {
+			// only capture the metric name for metric groups
+			// this will ignore locally defined metric attributes, which will not be namespaced
+			description := strings.TrimSpace(group.Brief)
 			if description != "" {
-				semanticAttributes[prefix+"."+attribute.ID] = strings.TrimSpace(description)
+				// upserts the description into the semanticAttributes map
+				semanticAttributes[group.MetricName] = strings.TrimSpace(description)
+			}
+
+		} else {
+			// get the group prefix
+			prefix := group.Prefix
+			if prefix == "" {
+				// if no prefix is specified
+				// skip this group as it is likely a metrics attribute_group without a namespace
+				continue
+			}
+
+			// loop through all attributes in the group
+			for _, attribute := range group.Attributes {
+				description := strings.TrimSpace(attribute.Brief)
+				if description != "" {
+					// upserts the description into the semanticAttributes map
+					semanticAttributes[prefix+"."+attribute.ID] = strings.TrimSpace(description)
+				}
 			}
 		}
+
 	}
 	return nil
 }
@@ -166,9 +207,10 @@ func validateOptions() error {
 	flag.StringVar(&honeycombApiKey, "honeycomb-api-key", LookupEnvOrString("HONEYCOMB_API_KEY", honeycombApiKey), "Honeycomb API Key")
 	flag.StringVar(&semanticModelPath, "model-path", LookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run Mode")
+	flag.BoolVar(&parseModelsOnly, "parse-models-only", false, "Parse Semantic Models only")
 	flag.Parse()
 
-	if honeycombApiKey == "" {
+	if honeycombApiKey == "" && parseModelsOnly == false {
 		printUsage()
 		return fmt.Errorf("missing: Honeycomb API Key")
 	}

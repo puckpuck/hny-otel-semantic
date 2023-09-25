@@ -6,6 +6,7 @@ type OtelSemanticModel struct {
 		Prefix     string `yaml:"prefix"`
 		Type       string `yaml:"type"`
 		Brief      string `yaml:"brief"`
+		MetricName string `yaml:"metric_name,omitempty"`
 		SpanKind   string `yaml:"span_kind,omitempty"`
 		Attributes []struct {
 			ID               string      `yaml:"id"`
