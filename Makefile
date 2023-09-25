@@ -5,6 +5,5 @@ sync-model:
 	curl https://codeload.github.com/open-telemetry/semantic-conventions/tar.gz/main | tar -xz --strip=1 semantic-conventions-main/model
 
 .PHONY: build
-build: sync-model
+build:
 	go build -o hny-otel-semantic
-

@@ -8,8 +8,9 @@ scoped for the API key are updated.
 
 ## Building
 
+This will build the binary: `hny-otel-semantic` 
 ```shell
-go build -o hny-otel-semantic
+make build
 ```
 
 ## Usage
@@ -34,8 +35,14 @@ or as an environment variable.
 
 The semantic models are stored in the `model` directory. The models are copied
 from the OpenTelemetry [semantic conventions](https://github.com/open-telemetry/semantic-conventions)
-repository. Models were last copied from the [4bbb8c9](https://github.com/open-telemetry/semantic-conventions/tree/4bbb8c907402caa90bc077214e8a2c78807c1ab9)
+repository. Models were last copied from the [984079e](https://github.com/open-telemetry/semantic-conventions/commit/984079ee2b98a5700b139989db9737b044ab40e6)
 commit.
+
+To sync with the latest models run:
+
+```shell
+make sync-models
+```
 
 These models contain the definition of the attributes and their
 descriptions.
