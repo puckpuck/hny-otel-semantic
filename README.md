@@ -29,7 +29,6 @@ or as an environment variable.
 |-------------------------|-----------------------|----------------------------------------------------------------|-----------|
 | --honeycomb-api-key     | HONEYCOMB_API_KEY     | Honeycomb API Key with permissions to update dataset columns   | `nil`     |
 | --model-path            | SEMANTIC_MODEL_PATH   | Path for OpenTelemetry semantic models                         | `model`   |
-| --all-metric-attributes |                       | Include all metric attributes, included ones without a prefix  | `false`   |
 | --dry-run               |                       | Dry run mode                                                   | `false`   |
 | --parse-models-only     |                       | Only parse the semantic models and display details             | `false`   |
 | --version               |                       | Display version information                                    | `false`   |

@@ -14,13 +14,12 @@ import (
 var VERSION = "UNKNOWN"
 
 var (
-	honeycombApiKey     string
-	semanticModelPath   = "model"
-	allMetricAttributes = false
-	dryRun              = false
-	parseModelsOnly     = false
-	printVersion        = false
-	semanticAttributes  map[string]string
+	honeycombApiKey    string
+	semanticModelPath  = "model"
+	dryRun             = false
+	parseModelsOnly    = false
+	printVersion       = false
+	semanticAttributes map[string]string
 )
 
 func main() {
@@ -178,36 +177,39 @@ func parseModel(path string) error {
 		return err
 	}
 
+	description := ""
+
 	for _, group := range model.Groups {
 
-		if group.Type == "metric" {
-			// only capture the metric name for metric groups
-			// this will ignore locally defined metric attributes, which will not be namespaced
-			description := strings.TrimSpace(group.Brief)
+		if group.Type == "metric" && group.MetricName != "" {
+			// capture the metric name for metrics
+			description = strings.TrimSpace(group.Brief)
 			if description != "" {
 				// upserts the description into the semanticAttributes map
 				semanticAttributes[group.MetricName] = strings.TrimSpace(description)
 			}
-
 		}
 
-		if allMetricAttributes || group.Type != "metric" {
-			// get the group prefix
-			prefix := group.Prefix
-			if prefix != "" {
-				prefix += "."
-			}
-
-			// loop through all attributes in the group
-			for _, attribute := range group.Attributes {
-				description := strings.TrimSpace(attribute.Brief)
-				if description != "" {
-					// upserts the description into the semanticAttributes map
-					semanticAttributes[prefix+attribute.ID] = strings.TrimSpace(description)
-				}
-			}
+		// get the group prefix
+		prefix := group.Prefix
+		if prefix != "" {
+			prefix += "."
 		}
 
+		// loop through all attributes in the group
+		for _, attribute := range group.Attributes {
+			if attribute.ID == "" {
+				continue
+			}
+
+			description = strings.TrimSpace(attribute.Brief)
+			if description == "" {
+				continue
+			}
+
+			// upserts the description into the semanticAttributes map
+			semanticAttributes[prefix+attribute.ID] = strings.TrimSpace(description)
+		}
 	}
 	return nil
 }
@@ -215,7 +217,6 @@ func parseModel(path string) error {
 func validateOptions() error {
 	flag.StringVar(&honeycombApiKey, "honeycomb-api-key", LookupEnvOrString("HONEYCOMB_API_KEY", honeycombApiKey), "Honeycomb API Key")
 	flag.StringVar(&semanticModelPath, "model-path", LookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
-	flag.BoolVar(&allMetricAttributes, "all-metric-attributes", false, "Include all metric attributes, including locally defined ones without namespace prefixes")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run Mode")
 	flag.BoolVar(&parseModelsOnly, "parse-models-only", false, "Parse Semantic Models only")
 	flag.BoolVar(&printVersion, "version", false, "Print version")
