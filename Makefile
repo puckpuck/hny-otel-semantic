@@ -1,3 +1,4 @@
+VERSION ?= $(shell cat version.txt | tr -d '\n')
 
 .PHONE: sync-model
 sync-model:
@@ -6,4 +7,5 @@ sync-model:
 
 .PHONY: build
 build:
-	go build -o hny-otel-semantic
+	@echo "Building hny-otel-semantic $(VERSION)"
+	go build -ldflags="-X 'main.VERSION=$(VERSION)'" -o hny-otel-semantic

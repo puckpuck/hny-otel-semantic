@@ -11,11 +11,14 @@ import (
 	"time"
 )
 
+var VERSION = "UNKNOWN"
+
 var (
 	honeycombApiKey    string
 	semanticModelPath  = "model"
 	dryRun             = false
 	parseModelsOnly    = false
+	printVersion       = false
 	semanticAttributes map[string]string
 )
 
@@ -23,6 +26,11 @@ func main() {
 	err := validateOptions()
 	if err != nil {
 		os.Exit(1)
+	}
+
+	if printVersion {
+		fmt.Println(VERSION)
+		os.Exit(0)
 	}
 
 	fmt.Println("Starting Honeycomb OpenTelemetry Semantic Model Updater...")
@@ -208,12 +216,18 @@ func validateOptions() error {
 	flag.StringVar(&semanticModelPath, "model-path", LookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run Mode")
 	flag.BoolVar(&parseModelsOnly, "parse-models-only", false, "Parse Semantic Models only")
+	flag.BoolVar(&printVersion, "version", false, "Print version")
 	flag.Parse()
 
-	if honeycombApiKey == "" && parseModelsOnly == false {
+	if parseModelsOnly || printVersion {
+		return nil
+	}
+
+	if honeycombApiKey == "" {
 		printUsage()
 		return fmt.Errorf("missing: Honeycomb API Key")
 	}
+
 	return nil
 }
 
