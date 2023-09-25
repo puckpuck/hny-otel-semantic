@@ -14,12 +14,13 @@ import (
 var VERSION = "UNKNOWN"
 
 var (
-	honeycombApiKey    string
-	semanticModelPath  = "model"
-	dryRun             = false
-	parseModelsOnly    = false
-	printVersion       = false
-	semanticAttributes map[string]string
+	honeycombApiKey     string
+	semanticModelPath   = "model"
+	allMetricAttributes = false
+	dryRun              = false
+	parseModelsOnly     = false
+	printVersion        = false
+	semanticAttributes  map[string]string
 )
 
 func main() {
@@ -188,13 +189,13 @@ func parseModel(path string) error {
 				semanticAttributes[group.MetricName] = strings.TrimSpace(description)
 			}
 
-		} else {
+		}
+
+		if allMetricAttributes || group.Type != "metric" {
 			// get the group prefix
 			prefix := group.Prefix
-			if prefix == "" {
-				// if no prefix is specified
-				// skip this group as it is likely a metrics attribute_group without a namespace
-				continue
+			if prefix != "" {
+				prefix += "."
 			}
 
 			// loop through all attributes in the group
@@ -202,7 +203,7 @@ func parseModel(path string) error {
 				description := strings.TrimSpace(attribute.Brief)
 				if description != "" {
 					// upserts the description into the semanticAttributes map
-					semanticAttributes[prefix+"."+attribute.ID] = strings.TrimSpace(description)
+					semanticAttributes[prefix+attribute.ID] = strings.TrimSpace(description)
 				}
 			}
 		}
@@ -214,6 +215,7 @@ func parseModel(path string) error {
 func validateOptions() error {
 	flag.StringVar(&honeycombApiKey, "honeycomb-api-key", LookupEnvOrString("HONEYCOMB_API_KEY", honeycombApiKey), "Honeycomb API Key")
 	flag.StringVar(&semanticModelPath, "model-path", LookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
+	flag.BoolVar(&allMetricAttributes, "all-metric-attributes", false, "Include all metric attributes, including locally defined ones without namespace prefixes")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run Mode")
 	flag.BoolVar(&parseModelsOnly, "parse-models-only", false, "Parse Semantic Models only")
 	flag.BoolVar(&printVersion, "version", false, "Print version")
