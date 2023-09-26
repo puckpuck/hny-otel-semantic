@@ -56,3 +56,7 @@ attribute, the new attribute will overwrite the previous attribute.
 Custom attribute definitions can be added to the `model` directory. The
 attribute definitions must be in the same format as the OpenTelemetry semantic
 conventions.
+
+> **Note**
+> This tool is provided as a convenience and is not officially supported by
+> Honeycomb. Please file an issue if you encounter any problems.
