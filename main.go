@@ -16,6 +16,7 @@ var VERSION = "UNKNOWN"
 var (
 	honeycombApiKey    string
 	semanticModelPath  = "model"
+	forceUpdate        = false
 	dryRun             = false
 	parseModelsOnly    = false
 	printVersion       = false
@@ -96,7 +97,7 @@ func updateHoneycombDatasets() error {
 		}
 
 		for _, column := range columns {
-			if column.Description == "" {
+			if column.Description == "" || forceUpdate {
 				if description, ok := semanticAttributes[column.KeyName]; ok {
 					fmt.Println("Updating column:", column.KeyName, "in dataset:", dataset.Name)
 					column.Description = truncate(description, 255)
@@ -215,8 +216,9 @@ func parseModel(path string) error {
 }
 
 func validateOptions() error {
-	flag.StringVar(&honeycombApiKey, "honeycomb-api-key", LookupEnvOrString("HONEYCOMB_API_KEY", honeycombApiKey), "Honeycomb API Key")
-	flag.StringVar(&semanticModelPath, "model-path", LookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
+	flag.StringVar(&honeycombApiKey, "honeycomb-api-key", lookupEnvOrString("HONEYCOMB_API_KEY", honeycombApiKey), "Honeycomb API Key")
+	flag.StringVar(&semanticModelPath, "model-path", lookupEnvOrString("SEMANTIC_MODEL_PATH", semanticModelPath), "Path for OpenTelemetry semantic models")
+	flag.BoolVar(&forceUpdate, "force", false, "Force update even if description is already set")
 	flag.BoolVar(&dryRun, "dry-run", false, "Dry run Mode")
 	flag.BoolVar(&parseModelsOnly, "parse-models-only", false, "Parse Semantic Models only")
 	flag.BoolVar(&printVersion, "version", false, "Print version")
@@ -239,7 +241,7 @@ func printUsage() {
 	flag.PrintDefaults()
 }
 
-func LookupEnvOrString(key string, defaultVal string) string {
+func lookupEnvOrString(key string, defaultVal string) string {
 	if val, ok := os.LookupEnv(key); ok {
 		return val
 	}
