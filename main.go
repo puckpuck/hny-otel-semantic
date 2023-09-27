@@ -139,28 +139,36 @@ func truncate(s string, n int) string {
 func parseSemanticModels() error {
 	fmt.Println("Parsing OpenTelemetry semantic models...")
 
-	err := filepath.WalkDir(semanticModelPath, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			fmt.Println("ERROR Parsing:", path)
-			return err
-		}
+	modelPaths := strings.Split(semanticModelPath, ",")
 
-		if d.IsDir() {
-			return nil
-		}
-
-		if strings.HasSuffix(d.Name(), ".yaml") {
-			fmt.Println("Parsing: ", path)
-			err = parseModel(path)
+	for _, modelPath := range modelPaths {
+		err := filepath.WalkDir(modelPath, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				fmt.Println("ERROR Parsing:", path)
 				return err
 			}
-		}
-		return nil
-	})
 
-	return err
+			if d.IsDir() {
+				return nil
+			}
+
+			if strings.HasSuffix(d.Name(), ".yaml") {
+				fmt.Println("Parsing: ", path)
+				err = parseModel(path)
+				if err != nil {
+					fmt.Println("ERROR Parsing:", path)
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			fmt.Println("ERROR Walking directory:", modelPath)
+			return err
+		}
+	}
+
+	return nil
 }
 
 func parseModel(path string) error {
