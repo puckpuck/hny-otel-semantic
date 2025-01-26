@@ -49,7 +49,7 @@ func (c *HoneycombClient) ListAllDatasets() ([]HoneycombDataset, error) {
 
 func (c *HoneycombClient) ListAllColumns(dataset HoneycombDataset) ([]HoneycombColumn, error) {
 
-	url := c.baseUrl + "/1/columns/" + dataset.Name
+	url := c.baseUrl + "/1/columns/" + dataset.Slug
 	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (c *HoneycombClient) ListAllColumns(dataset HoneycombDataset) ([]HoneycombC
 
 func (c *HoneycombClient) UpdateColumn(dataset HoneycombDataset, column HoneycombColumn) error {
 
-	url := c.baseUrl + "/1/columns/" + dataset.Name + "/" + column.Id
+	url := c.baseUrl + "/1/columns/" + dataset.Slug + "/" + column.Id
 	payload, err := json.Marshal(column)
 	if err != nil {
 		return err
